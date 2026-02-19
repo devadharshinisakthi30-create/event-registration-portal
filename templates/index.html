@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registration Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- DESKTOP NAV — hidden on mobile -->
+    <nav class="navbar desktop-only">
+        <div class="container nav-inner">
+            <h1 class="logo">🎓 Event Registration Portal</h1>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}" class="active">Register</a></li>
+                <li><a href="{{ url_for('registered_students_page') }}">Registered Students</a></li>
+                <li><a href="{{ url_for('admin_login') }}">Admin Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- MOBILE BANNER — shown only on mobile -->
+    <div class="mobile-banner mobile-only">
+        <div class="mobile-banner-inner">
+            <span class="mobile-logo">🎓</span>
+            <div>
+                <h2>Event Registration</h2>
+                <p>Fill in your details to register</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container main-content">
+        <div class="registration-card">
+            <div class="card-header">
+                <h2>📋 Student Event Registration</h2>
+                <p>Fill in your details to register for IT events</p>
+            </div>
+
+            <form action="{{ url_for('register') }}" method="POST" class="registration-form">
+
+                <div class="form-section">
+                    <h3>Personal Information</h3>
+                    <div class="form-group">
+                        <label for="name">👤 Full Name *</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">📱 Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required placeholder="10-digit number" pattern="[0-9]{10}">
+                        </div>
+                        <div class="form-group">
+                            <label for="register_number">🔢 Register Number *</label>
+                            <input type="text" id="register_number" name="register_number" required placeholder="e.g., 2021CS001">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Academic Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="department">🏛️ Department *</label>
+                            <select id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Electronics and Communication">Electronics and Communication</option>
+                                <option value="Electrical Engineering">Electrical Engineering</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="Civil Engineering">Civil Engineering</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">📅 Year of Study *</label>
+                            <select id="year" name="year" required>
+                                <option value="">Select Year</option>
+                                <option value="I">I Year</option>
+                                <option value="II">II Year</option>
+                                <option value="III">III Year</option>
+                                <option value="IV">IV Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="college">🏫 College Name *</label>
+                        <input type="text" id="college" name="college" required placeholder="Enter your college name">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Event Selection</h3>
+                    <div class="form-group">
+                        <label>🎯 Select Events * <em style="font-weight:400;font-size:0.85rem;">(Choose one or more)</em></label>
+                        <div class="events-grid">
+                            {% for event_name, details in events.items() %}
+                            <div class="event-checkbox">
+                                <input type="checkbox" id="event_{{ loop.index }}" name="events" value="{{ event_name }}">
+                                <label for="event_{{ loop.index }}" class="event-label">
+                                    <div class="event-name">{{ event_name }}</div>
+                                    <div class="event-details">
+                                        <span class="time">🕐 {{ details.time }}</span>
+                                        <span class="venue">📍 {{ details.venue }}</span>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">📆 Event Date *</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">✅ Register Now</button>
+                    <button type="reset" class="btn btn-secondary">🔄 Reset Form</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- QR CODE — visible ONLY on desktop -->
+    <div class="container qr-section desktop-only">
+        <div class="qr-card">
+            <h3>📱 Scan to Access on Mobile</h3>
+            <p class="qr-description">Scan this QR code with your mobile device to open the registration portal</p>
+            <div class="qr-status" id="qr-status"></div>
+            <div id="qrcode" class="qr-container"></div>
+            <div class="qr-url" id="qr-url-display">Loading...</div>
+            <p class="qr-instructions" id="qr-instructions">
+                📲 <strong>How to scan:</strong><br>
+                Open your mobile camera or QR code scanner and point it at the code above
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Event Registration Portal. All rights reserved.</p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set min date to today
+        const dateInput = document.getElementById('date');
+        if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
+
+        // Phone — numbers only, max 10 digits
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g, '').slice(0, 10);
+            });
+        }
+
+        // Validate at least one event selected
+        const form = document.querySelector('.registration-form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const checked = document.querySelectorAll('input[name="events"]:checked');
+                if (checked.length === 0) {
+                    e.preventDefault();
+                    alert('⚠️ Please select at least one event!');
+                }
+            });
+        }
+
+        // QR Code generation — only on desktop
+        const qrEl = document.getElementById('qrcode');
+        if (qrEl) {
+            fetch('/get-server-url')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('qr-url-display').textContent = data.url;
+                    const statusDiv = document.getElementById('qr-status');
+                    if (data.type === 'public') {
+                        statusDiv.innerHTML = '<span class="status-public">✅ PUBLIC ACCESS — Works on Mobile Data!</span>';
+                        statusDiv.className = 'qr-status status-public-box';
+                        document.getElementById('qr-instructions').innerHTML =
+                            '📲 <strong>Works on ANY network!</strong><br>Mobile data, WiFi, or any network!';
+                    } else {
+                        statusDiv.innerHTML = '<span class="status-local">🏠 LOCAL ACCESS — Same WiFi Only</span>';
+                        statusDiv.className = 'qr-status status-local-box';
+                    }
+                    new QRCode(qrEl, {
+                        text: data.url, width: 200, height: 200,
+                        colorDark: "#1e3a8a", colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                })
+                .catch(() => {
+                    const d = document.getElementById('qr-url-display');
+                    if (d) d.textContent = 'Error loading QR code';
+                });
+        }
+    });
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

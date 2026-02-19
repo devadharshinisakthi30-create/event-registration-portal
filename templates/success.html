@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar desktop-only">
+        <div class="container nav-inner">
+            <h1 class="logo">🎓 Event Registration Portal</h1>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Register</a></li>
+                <li><a href="{{ url_for('registered_students_page') }}">Registered Students</a></li>
+                <li><a href="{{ url_for('admin_login') }}">Admin Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <div class="thankyou-wrapper">
+            <div class="tick-circle">
+                <svg viewBox="0 0 52 52" class="tick-svg">
+                    <circle class="tick-circle-bg" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="tick-check" fill="none" d="M14 27 l8 8 l16 -16"/>
+                </svg>
+            </div>
+
+            <h1 class="thankyou-title">Registration Successful!</h1>
+            <p class="thankyou-subtitle">Thank you for registering, <strong>{{ student.name }}</strong>!</p>
+
+            <div class="thankyou-info-box">
+                <div class="thankyou-row">
+                    <span class="thankyou-icon">👤</span>
+                    <span class="thankyou-label">Name</span>
+                    <span class="thankyou-value">{{ student.name }}</span>
+                </div>
+                <div class="thankyou-divider"></div>
+                <div class="thankyou-row">
+                    <span class="thankyou-icon">🎫</span>
+                    <span class="thankyou-label">Enroll Number</span>
+                    <span class="thankyou-value enroll-highlight">{{ student.registration_id }}</span>
+                </div>
+            </div>
+
+            <p class="thankyou-note">📌 Please save your enroll number: <strong>{{ student.registration_id }}</strong></p>
+
+            <div class="thankyou-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">🏠 Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Event Registration Portal. All rights reserved.</p>
+    </footer>
+</body>
+</html>

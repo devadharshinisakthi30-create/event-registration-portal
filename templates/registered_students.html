@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Students</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-inner">
+            <h1 class="logo">🎓 Event Registration Portal</h1>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Register</a></li>
+                <li><a href="{{ url_for('registered_students_page') }}" class="active">Registered Students</a></li>
+                <li><a href="{{ url_for('admin_login') }}">Admin Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <div class="page-header">
+            <h2>👥 Registered Students</h2>
+            <p class="total-count">Total Registrations: <span class="badge">{{ students|length }}</span></p>
+        </div>
+
+        {% if students %}
+        <div class="students-table-wrapper">
+            <table class="students-horiz-table">
+                <thead>
+                    <tr>
+                        <th>Enroll No.</th>
+                        <th>Name</th>
+                        <th>Register No.</th>
+                        <th>Department</th>
+                        <th>Year</th>
+                        <th>College</th>
+                        <th>Phone</th>
+                        <th>Events</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr class="student-row">
+                        <td><span class="enroll-badge">{{ student.registration_id }}</span></td>
+                        <td><strong>{{ student.name }}</strong></td>
+                        <td>{{ student.register_number }}</td>
+                        <td>{{ student.department }}</td>
+                        <td>{{ student.year }}</td>
+                        <td>{{ student.college }}</td>
+                        <td>{{ student.phone }}</td>
+                        <td>
+                            <div class="events-pills">
+                                {% for event in student.events %}
+                                <span class="pill">{{ event }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>{{ student.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No Registrations Yet</h3>
+            <p>Be the first to register for our exciting events!</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Register Now</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- QR Code Section -->
+    <div class="container qr-section">
+        <div class="qr-card">
+            <h3>📱 Scan to Access on Mobile</h3>
+            <p class="qr-description">Scan this QR code to open the registration portal on mobile</p>
+            <div class="qr-status" id="qr-status"></div>
+            <div id="qrcode" class="qr-container"></div>
+            <div class="qr-url" id="qr-url-display">Loading...</div>
+            <p class="qr-instructions" id="qr-instructions">
+                📲 <strong>How to scan:</strong><br>
+                Open your mobile camera and point it at the QR code above
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Event Registration Portal. All rights reserved.</p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/get-server-url')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('qr-url-display').textContent = data.url;
+                const statusDiv = document.getElementById('qr-status');
+                if (data.type === 'public') {
+                    statusDiv.innerHTML = '<span class="status-public">✅ PUBLIC ACCESS — Works on Mobile Data!</span>';
+                    statusDiv.className = 'qr-status status-public-box';
+                    document.getElementById('qr-instructions').innerHTML =
+                        '📲 <strong>Works on ANY network!</strong><br>Mobile data, WiFi, or any network — all work!';
+                } else {
+                    statusDiv.innerHTML = '<span class="status-local">🏠 LOCAL ACCESS — Same WiFi Only</span>';
+                    statusDiv.className = 'qr-status status-local-box';
+                }
+                new QRCode(document.getElementById('qrcode'), {
+                    text: data.url, width: 200, height: 200,
+                    colorDark: "#1e3a8a", colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            })
+            .catch(() => {
+                document.getElementById('qr-url-display').textContent = 'Error loading QR code';
+            });
+    });
+    </script>
+</body>
+</html>
